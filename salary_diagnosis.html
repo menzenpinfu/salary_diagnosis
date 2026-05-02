@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>もしプロだったら年俸診断</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080a0f;
+  --bg2: #0f1520;
+  --bg3: #162030;
+  --gold: #d4a843;
+  --gold2: #f0cc70;
+  --green: #22b555;
+  --red: #e04444;
+  --white: #e8eef8;
+  --gray: #6878a0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  min-height: 100vh;
+  padding: 0 16px 48px;
+}
+.container { max-width: 480px; margin: 0 auto; }
+
+/* ヘッダー */
+.header {
+  text-align: center;
+  padding: 32px 0 24px;
+}
+.header-en {
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--gold);
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+.header-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 8vw, 42px);
+  letter-spacing: 2px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--gold2), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.header-sub {
+  font-size: 12px;
+  color: var(--gray);
+  letter-spacing: 0.5px;
+}
+
+/* セクション */
+.section {
+  background: var(--bg2);
+  border-radius: 18px;
+  padding: 20px 18px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--gold);
+  opacity: 0.8;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+}
+
+/* 入力グリッド */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.input-grid.single { grid-template-columns: 1fr; }
+
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 11px; color: var(--gray); letter-spacing: 0.5px; }
+.form-label span { font-size: 10px; opacity: 0.6; margin-left: 4px; }
+
+.form-input {
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.09);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--white);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  -moz-appearance: textfield;
+}
+.form-input::-webkit-outer-spin-button,
+.form-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.form-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212,168,67,0.12);
+}
+.form-input::placeholder { color: rgba(255,255,255,0.2); font-weight: 400; }
+
+/* 計算ボタン */
+.calc-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: var(--bg);
+  border: none;
+  border-radius: 14px;
+  padding: 18px;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 6px 24px rgba(212,168,67,0.3);
+}
+.calc-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(212,168,67,0.45); }
+.calc-btn:active { transform: translateY(0); }
+
+/* 結果 */
+#result-section { display: none; margin-top: 16px; }
+
+.result-card {
+  background: var(--bg2);
+  border-radius: 22px;
+  padding: 28px 22px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(212,168,67,0.2);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.result-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.result-label {
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--gold);
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+.player-rank {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 3px;
+  color: var(--white);
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+
+.salary-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(44px, 12vw, 64px);
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--gold2), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.salary-unit {
+  font-size: 13px;
+  color: var(--gray);
+  margin-bottom: 20px;
+}
+
+.rank-badge {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.comment-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(232,238,248,0.75);
+  position: relative;
+  z-index: 1;
+}
+
+/* 評価内訳 */
+.breakdown-section {
+  background: var(--bg2);
+  border-radius: 18px;
+  padding: 20px 18px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.breakdown-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--gray);
+  opacity: 0.6;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.breakdown-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.breakdown-row:last-child { margin-bottom: 0; }
+
+.bd-label { font-size: 12px; color: var(--gray); width: 70px; flex-shrink: 0; }
+.bd-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.07); border-radius: 5px; overflow: hidden; }
+.bd-fill { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
+.bd-score { font-family: 'Bebas Neue', sans-serif; font-size: 15px; width: 32px; text-align: right; }
+
+/* 比較 */
+.compare-section {
+  background: var(--bg2);
+  border-radius: 18px;
+  padding: 20px 18px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.compare-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--gray);
+  opacity: 0.6;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compare-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.compare-item {
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.compare-item-label { font-size: 10px; color: var(--gray); margin-bottom: 4px; opacity: 0.7; }
+.compare-item-val { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; }
+
+/* リセットボタン */
+.reset-btn {
+  width: 100%;
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  color: var(--gray);
+  border-radius: 14px;
+  padding: 14px;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.reset-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--white); }
+
+/* 保存ボタン */
+.save-section {
+  background: var(--bg2);
+  border-radius: 18px;
+  padding: 20px 18px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(34,181,85,0.2);
+}
+.save-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--green);
+  opacity: 0.8;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.save-title::after { content: ''; flex: 1; height: 1px; background: rgba(34,181,85,0.1); }
+.save-row { display: flex; gap: 10px; align-items: flex-end; }
+.save-input-wrap { flex: 1; }
+.save-btn {
+  background: linear-gradient(135deg, var(--green), #44dd88);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(34,181,85,0.3);
+  white-space: nowrap;
+}
+.save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,181,85,0.45); }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.save-msg { font-size: 12px; text-align: center; margin-top: 8px; min-height: 16px; }
+.save-msg.ok { color: var(--green); }
+.save-msg.ng { color: var(--red); }
+
+.error-msg {
+  color: var(--red);
+  font-size: 12px;
+  text-align: center;
+  margin-top: 8px;
+  display: none;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-en">IF YOU WERE A PRO</div>
+    <div class="header-title">💰 もしプロだったら<br>年俸いくら？</div>
+    <div class="header-sub">あなたの成績からプロ野球換算年俸を診断</div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="section">
+    <div class="section-title">成績を入力</div>
+    <div class="input-grid">
+      <div class="form-group">
+        <label class="form-label">打率 <span>例：.312</span></label>
+        <input type="number" class="form-input" id="avg" placeholder=".000" step="0.001" min="0" max="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">OPS <span>例：.850</span></label>
+        <input type="number" class="form-input" id="ops" placeholder=".000" step="0.001" min="0" max="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">本塁打 <span>本</span></label>
+        <input type="number" class="form-input" id="hr" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">打点 <span>点</span></label>
+        <input type="number" class="form-input" id="rbi" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">盗塁 <span>個</span></label>
+        <input type="number" class="form-input" id="sb" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">試合数 <span>換算用</span></label>
+        <input type="number" class="form-input" id="games" placeholder="20" min="1">
+      </div>
+    </div>
+    <p class="error-msg" id="error-msg">打率とOPSを入力してください</p>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">💴 年俸を診断する</button>
+
+  <!-- 結果 -->
+  <div id="result-section">
+
+    <div class="result-card">
+      <div class="result-label">YOUR PRO SALARY</div>
+      <div class="player-rank" id="player-rank"></div>
+      <div class="salary-amount" id="salary-amount"></div>
+      <div class="salary-unit">万円 / 年</div>
+      <div class="rank-badge" id="rank-badge"></div>
+      <div class="comment-text" id="comment-text"></div>
+    </div>
+
+    <div class="breakdown-section">
+      <div class="breakdown-title">評価内訳</div>
+      <div class="breakdown-row">
+        <span class="bd-label">打撃力</span>
+        <div class="bd-bar"><div class="bd-fill" id="bd-batting" style="width:0%;background:linear-gradient(90deg,#d4a843,#f0cc70)"></div></div>
+        <span class="bd-score" id="sc-batting" style="color:#d4a843"></span>
+      </div>
+      <div class="breakdown-row">
+        <span class="bd-label">長打力</span>
+        <div class="bd-bar"><div class="bd-fill" id="bd-power" style="width:0%;background:linear-gradient(90deg,#e04444,#ff7070)"></div></div>
+        <span class="bd-score" id="sc-power" style="color:#e04444"></span>
+      </div>
+      <div class="breakdown-row">
+        <span class="bd-label">勝負強さ</span>
+        <div class="bd-bar"><div class="bd-fill" id="bd-clutch" style="width:0%;background:linear-gradient(90deg,#4488ff,#88aaff)"></div></div>
+        <span class="bd-score" id="sc-clutch" style="color:#4488ff"></span>
+      </div>
+      <div class="breakdown-row">
+        <span class="bd-label">走力</span>
+        <div class="bd-bar"><div class="bd-fill" id="bd-speed" style="width:0%;background:linear-gradient(90deg,#22b555,#55dd88)"></div></div>
+        <span class="bd-score" id="sc-speed" style="color:#22b555"></span>
+      </div>
+      <div class="breakdown-row">
+        <span class="bd-label">総合力</span>
+        <div class="bd-bar"><div class="bd-fill" id="bd-total" style="width:0%;background:linear-gradient(90deg,#d4a843,#f0cc70)"></div></div>
+        <span class="bd-score" id="sc-total" style="color:#d4a843"></span>
+      </div>
+    </div>
+
+    <div class="compare-section">
+      <div class="compare-title">プロ換算成績（143試合）</div>
+      <div class="compare-grid">
+        <div class="compare-item">
+          <div class="compare-item-label">本塁打</div>
+          <div class="compare-item-val" id="pro-hr" style="color:#e04444"></div>
+        </div>
+        <div class="compare-item">
+          <div class="compare-item-label">打点</div>
+          <div class="compare-item-val" id="pro-rbi" style="color:#4488ff"></div>
+        </div>
+        <div class="compare-item">
+          <div class="compare-item-label">盗塁</div>
+          <div class="compare-item-val" id="pro-sb" style="color:#22b555"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 大谷比較 -->
+    <div class="compare-section">
+      <div class="compare-title">大谷翔平に必要な人数</div>
+      <div style="text-align:center;padding:16px 8px;">
+        <div style="font-size:11px;color:var(--gray);margin-bottom:8px;letter-spacing:1px;">大谷選手（推定年俸約150億円）に相当するには</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,10vw,52px);background:linear-gradient(135deg,#f0cc70,#d4a843);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px;" id="ohtani-count"></div>
+        <div style="font-size:13px;color:var(--gray);margin-bottom:12px;" id="ohtani-unit"></div>
+        <div style="font-size:13px;color:rgba(232,238,248,0.65);line-height:1.7;" id="ohtani-comment"></div>
+      </div>
+    </div>
+
+    <!-- 似てるプロ野球選手 -->
+    <div class="compare-section">
+      <div class="compare-title">あなたに近いプロ野球選手</div>
+      <div style="text-align:center;padding:16px 8px;">
+        <div style="font-size:36px;margin-bottom:8px;" id="similar-emoji"></div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:var(--gold);opacity:0.7;margin-bottom:4px;" id="similar-team"></div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,7vw,34px);letter-spacing:2px;color:var(--white);margin-bottom:8px;" id="similar-name"></div>
+        <div style="font-size:13px;color:rgba(232,238,248,0.65);line-height:1.7;" id="similar-desc"></div>
+      </div>
+    </div>
+
+    <!-- 保存セクション -->
+    <div class="save-section">
+      <div class="save-title">📊 結果をスプレッドシートに保存</div>
+      <div class="save-row">
+        <div class="save-input-wrap">
+          <label class="form-label" style="margin-bottom:5px;display:block;">背番号</label>
+          <input type="number" class="form-input" id="save-number" placeholder="例：7" min="0" max="99">
+        </div>
+        <button class="save-btn" id="save-btn" onclick="saveResult()">💾 保存する</button>
+      </div>
+      <div class="save-msg" id="save-msg"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetForm()">🔄 もう一度診断する</button>
+  </div>
+
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDcpuXxhq7VAROtJR_ZaFpSZ840PnYJaOkIwp6zLTskkubmbT2ivx0RulxS3xelpo__Q/exec';
+
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+// 診断結果をグローバルに保持
+let lastSalary = 0;
+let lastPlayerName = '';
+let lastRankName = '';
+
+function calculate() {
+  const avg = v('avg');
+  const ops = v('ops');
+  const hr = v('hr');
+  const rbi = v('rbi');
+  const sb = v('sb');
+  const games = v('games') || 20;
+
+  if (avg === 0 && ops === 0) {
+    document.getElementById('error-msg').style.display = 'block';
+    return;
+  }
+  document.getElementById('error-msg').style.display = 'none';
+
+  // ── スコア計算 ──
+  // 打撃力（打率・OPSベース）
+  const battingScore = Math.min(100, Math.round(avg * 250 + ops * 30));
+
+  // 長打力（HR・OPSベース）
+  const hrPer = hr / games * 143;
+  const powerScore = Math.min(100, Math.round(hrPer * 2.5 + ops * 20));
+
+  // 勝負強さ（打点）
+  const rbiPer = rbi / games * 143;
+  const clutchScore = Math.min(100, Math.round(rbiPer * 0.8 + avg * 100));
+
+  // 走力（盗塁）
+  const sbPer = sb / games * 143;
+  const speedScore = Math.min(100, Math.round(sbPer * 2.5 + avg * 50));
+
+  // 総合スコア
+  const totalScore = Math.round(battingScore * 0.35 + powerScore * 0.25 + clutchScore * 0.25 + speedScore * 0.15);
+
+  // ── 年俸計算 ──
+  let salary, rankName, rankColor, comment, playerRank;
+
+  if (totalScore >= 85) {
+    salary = Math.round((totalScore - 84) * 8000 + 20000);
+    rankName = '🏆 球界の頂点';
+    rankColor = '#d4a843';
+    comment = '三冠王・MVP級の成績。日本一の選手として球団の顔。FA移籍すれば複数球団が争奪戦を繰り広げる超一流選手。';
+    playerRank = 'LEGEND CLASS';
+  } else if (totalScore >= 75) {
+    salary = Math.round((totalScore - 74) * 2000 + 8000);
+    rankName = '⭐ 球団の主砲';
+    rankColor = '#f0cc70';
+    comment = '打線の中心を担うクリーンアップ。オールスター常連で代表候補。球団にとって欠かせない存在。';
+    playerRank = 'ALL STAR CLASS';
+  } else if (totalScore >= 62) {
+    salary = Math.round((totalScore - 61) * 500 + 2000);
+    rankName = '🌟 レギュラー選手';
+    rankColor = '#88aaff';
+    comment = 'スタメン定着のレギュラー選手。チームの勝利に貢献する安定した成績。来季の更なる飛躍に期待。';
+    playerRank = 'REGULAR CLASS';
+  } else if (totalScore >= 48) {
+    salary = Math.round((totalScore - 47) * 100 + 600);
+    rankName = '📈 一軍候補';
+    rankColor = '#22b555';
+    comment = '一軍と二軍を行き来するレベル。あと一押しの成績向上でスタメン定着が見えてくる。';
+    playerRank = 'PROSPECT CLASS';
+  } else {
+    salary = Math.round(totalScore * 8 + 200);
+    rankName = '🌱 育成選手';
+    rankColor = '#6878a0';
+    comment = '育成契約からのスタート。基礎を磨いてレギュラーを目指せ。プロの壁は高いが可能性はある。';
+    playerRank = 'DEVELOPMENT CLASS';
+  }
+
+  // プロ換算
+  const proHr = Math.round(hrPer);
+  const proRbi = Math.round(rbiPer);
+  const proSb = Math.round(sbPer);
+
+  // 表示
+  // グローバルに保存
+  lastSalary = salary;
+  lastRankName = rankName;
+
+  document.getElementById('player-rank').textContent = playerRank;
+  document.getElementById('salary-amount').textContent = salary.toLocaleString();
+  document.getElementById('rank-badge').textContent = rankName;
+  document.getElementById('rank-badge').style.cssText = `background:${rankColor}20;border:1px solid ${rankColor}50;color:${rankColor};`;
+  document.getElementById('comment-text').textContent = comment;
+
+  // 内訳バー
+  setTimeout(() => {
+    document.getElementById('bd-batting').style.width = battingScore + '%';
+    document.getElementById('bd-power').style.width = powerScore + '%';
+    document.getElementById('bd-clutch').style.width = clutchScore + '%';
+    document.getElementById('bd-speed').style.width = speedScore + '%';
+    document.getElementById('bd-total').style.width = totalScore + '%';
+  }, 100);
+
+  document.getElementById('sc-batting').textContent = battingScore;
+  document.getElementById('sc-power').textContent = powerScore;
+  document.getElementById('sc-clutch').textContent = clutchScore;
+  document.getElementById('sc-speed').textContent = speedScore;
+  document.getElementById('sc-total').textContent = totalScore;
+
+  // プロ換算
+  document.getElementById('pro-hr').textContent = proHr + '本';
+  document.getElementById('pro-rbi').textContent = proRbi + '点';
+  document.getElementById('pro-sb').textContent = proSb + '個';
+
+  document.getElementById('result-section').style.display = 'block';
+  document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+
+  // 大谷比較
+  const ohtaniSalary = 1500000; // 万円（約150億円）
+  const ohtaniCount = Math.ceil(ohtaniSalary / salary);
+  document.getElementById('ohtani-count').textContent = ohtaniCount.toLocaleString() + '人';
+  document.getElementById('ohtani-unit').textContent = 'あなたが' + ohtaniCount.toLocaleString() + '人いると大谷選手1人分';
+  const ohtaniComments = [
+    ohtaniCount <= 2 ? '大谷選手とほぼ同格！球史に残る成績です。' : '',
+    ohtaniCount <= 5 ? 'スーパースター級の年俸。球団の顔として申し分なし。' : '',
+    ohtaniCount <= 15 ? 'トップクラスの選手。チームの主力として活躍できる実力者。' : '',
+    ohtaniCount <= 50 ? 'レギュラーとして十分な成績。さらに磨けば上を狙える。' : '',
+    ohtaniCount <= 150 ? '一軍を目指して努力中。基礎をしっかり固めよう。' : '',
+    '育成から這い上がれ！プロの道は険しいが夢はある。',
+  ].filter(Boolean)[0] || '育成から這い上がれ！プロの道は険しいが夢はある。';
+  document.getElementById('ohtani-comment').textContent = ohtaniComments;
+
+  // 年俸が近いプロ野球選手（具体的な選手でバリエーション豊富に）
+  const players = [
+    // 超一流（億超え〜）
+    { ja:'大谷翔平',   team:'Los Angeles Dodgers',      emoji:'👑', salary:1500000, desc:'推定年俸約150億円。史上最高の二刀流。あなたは球史に残る選手です。' },
+    { ja:'山本由伸',   team:'Los Angeles Dodgers',      emoji:'🔥', salary:400000,  desc:'推定年俸約40億円。令和の怪物エース。打者としても超一流の評価。' },
+    { ja:'佐々木朗希', team:'千葉ロッテマリーンズ',     emoji:'⚡', salary:250000,  desc:'推定年俸約25億円。完全試合を達成した次世代のエース。' },
+    { ja:'吉田正尚',   team:'Boston Red Sox',           emoji:'🎯', salary:180000,  desc:'推定年俸約18億円。メジャーでも結果を出した日本屈指の巧打者。' },
+    { ja:'鈴木誠也',   team:'Chicago Cubs',             emoji:'💥', salary:150000,  desc:'推定年俸約15億円。メジャーでも活躍するパワーヒッター。' },
+    { ja:'ダルビッシュ有', team:'San Diego Padres',     emoji:'🌟', salary:120000,  desc:'推定年俸約12億円。メジャーを長年支えたレジェンド右腕。' },
+    // 一流（数億円台）
+    { ja:'村上宗隆',   team:'東京ヤクルトスワローズ',   emoji:'💪', salary:65000,   desc:'年俸約6.5億円。史上最年少三冠王。球界屈指のスラッガー。' },
+    { ja:'柳田悠岐',   team:'福岡ソフトバンクホークス', emoji:'🦅', salary:60000,   desc:'年俸約6億円。天才的なバットコントロールを誇る球界を代表する強打者。' },
+    { ja:'浅村栄斗',   team:'東北楽天ゴールデンイーグルス',emoji:'🦅',salary:55000, desc:'年俸約5.5億円。長打と勝負強さを兼ね備えたクリーンアップ。' },
+    { ja:'山田哲人',   team:'東京ヤクルトスワローズ',   emoji:'🌀', salary:50000,   desc:'年俸約5億円。トリプルスリーを3度達成した球界屈指の二塁手。' },
+    { ja:'牧秀悟',     team:'横浜DeNAベイスターズ',     emoji:'🔵', salary:45000,   desc:'年俸約4.5億円。高打率と長打力を兼ね備えた次世代の主砲。' },
+    { ja:'森友哉',     team:'オリックス・バファローズ',  emoji:'🐂', salary:40000,   desc:'年俸約4億円。強肩強打の球界トップクラスの捕手。' },
+    { ja:'近本光司',   team:'阪神タイガース',           emoji:'🐯', salary:35000,   desc:'年俸約3.5億円。俊足巧打のリードオフマン。盗塁王争いの常連。' },
+    { ja:'岡本和真',   team:'読売ジャイアンツ',         emoji:'🐱', salary:33000,   desc:'年俸約3.3億円。4番を張る長距離砲。本塁打・打点でタイトル争いの常連。' },
+    { ja:'丸佳浩',     team:'読売ジャイアンツ',         emoji:'🐱', salary:30000,   desc:'年俸約3億円。高出塁率と長打力を誇るオールラウンダー。' },
+    { ja:'中村剛也',   team:'埼玉西武ライオンズ',       emoji:'🦁', salary:28000,   desc:'年俸約2.8億円。通算本塁打450本超えのおかわり君。パワーの塊。' },
+    { ja:'吉川尚輝',   team:'読売ジャイアンツ',         emoji:'🐱', salary:25000,   desc:'年俸約2.5億円。守備と走塁で光る内野のスペシャリスト。' },
+    { ja:'中野拓夢',   team:'阪神タイガース',           emoji:'🐯', salary:22000,   desc:'年俸約2.2億円。俊足と守備でチームを支えるリードオフマン。' },
+    { ja:'源田壮亮',   team:'埼玉西武ライオンズ',       emoji:'🦁', salary:18000,   desc:'年俸約1.8億円。鉄壁の守備を誇るゴールデングラブ常連の遊撃手。' },
+    { ja:'西川龍馬',   team:'福岡ソフトバンクホークス', emoji:'🦅', salary:15000,   desc:'年俸約1.5億円。安定した打撃でチームに貢献する外野の職人。' },
+    { ja:'宮崎敏郎',   team:'横浜DeNAベイスターズ',     emoji:'🔵', salary:13000,   desc:'年俸約1.3億円。高打率を誇る職人肌の打者。首位打者経験あり。' },
+    // 中堅（数千万円台）
+    { ja:'辰己涼介',   team:'東北楽天ゴールデンイーグルス',emoji:'🦅',salary:10000, desc:'年俸約1億円。外野の守備と走塁でチームに貢献するスピードスター。' },
+    { ja:'坂倉将吾',   team:'広島東洋カープ',           emoji:'⚽', salary:8500,    desc:'年俸約8500万円。攻守でチームを支える広島の正捕手。' },
+    { ja:'熊谷敬宥',   team:'阪神タイガース',           emoji:'🐯', salary:7000,    desc:'年俸約7000万円。俊足を武器に代走・守備固めで存在感を示す選手。' },
+    { ja:'小深田大翔', team:'東北楽天ゴールデンイーグルス',emoji:'🦅',salary:6000,  desc:'年俸約6000万円。確実性の高い打撃と守備でレギュラーを掴んだ選手。' },
+    { ja:'田中広輔',   team:'広島東洋カープ',           emoji:'⚽', salary:5000,    desc:'年俸約5000万円。チームへの貢献度が高いベテランの域に入りつつある選手。' },
+    { ja:'糸原健斗',   team:'阪神タイガース',           emoji:'🐯', salary:4000,    desc:'年俸約4000万円。粘り強い打撃と確実な守備で貢献するユーティリティ選手。' },
+    { ja:'小幡竜平',   team:'阪神タイガース',           emoji:'🐯', salary:3000,    desc:'年俸約3000万円。守備を武器に一軍定着を目指す若手内野手。' },
+    { ja:'渡辺佳明',   team:'東北楽天ゴールデンイーグルス',emoji:'🦅',salary:2500,  desc:'年俸約2500万円。勝負強い打撃で一軍に定着しつつある中堅選手。' },
+    { ja:'岡林勇希',   team:'中日ドラゴンズ',           emoji:'🐉', salary:2000,    desc:'年俸約2000万円。俊足と堅守で若手ながら一軍でレギュラーを狙う選手。' },
+    // 若手・控え
+    { ja:'紅林弘太郎', team:'オリックス・バファローズ',  emoji:'🐂', salary:1800,    desc:'年俸約1800万円。強肩と長打力でブレイクを狙う若手内野手。' },
+    { ja:'内山壮真',   team:'東京ヤクルトスワローズ',   emoji:'🌀', salary:1500,    desc:'年俸約1500万円（一軍最低保障レベル）。将来の正捕手候補の若手。' },
+    { ja:'育成ルーキー', team:'NPB育成',               emoji:'🌱', salary:500,     desc:'年俸約500万円。育成契約でプロの世界に飛び込んだ卵たち。夢は大きく！' },
+  ];
+
+  // 年俸が一番近い選手を選ぶ
+  const matched = players.reduce((prev, curr) =>
+    Math.abs(curr.salary - salary) < Math.abs(prev.salary - salary) ? curr : prev
+  );
+  lastPlayerName = matched.ja;
+  document.getElementById('similar-emoji').textContent = matched.emoji;
+  document.getElementById('similar-team').textContent = matched.team;
+  document.getElementById('similar-name').textContent = matched.ja;
+  document.getElementById('similar-desc').textContent = matched.desc;
+}
+
+async function saveResult() {
+  const numEl = document.getElementById('save-number');
+  const msgEl = document.getElementById('save-msg');
+  const btn = document.getElementById('save-btn');
+
+  if (!numEl.value) {
+    msgEl.className = 'save-msg ng';
+    msgEl.textContent = '背番号を入力してください';
+    return;
+  }
+  if (lastSalary === 0) {
+    msgEl.className = 'save-msg ng';
+    msgEl.textContent = '先に診断してください';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  msgEl.textContent = '';
+
+  const ohtaniSalary = 1500000;
+  const ohtaniCount = Math.ceil(ohtaniSalary / lastSalary);
+  const data = {
+    type: 'salary',
+    number: parseInt(numEl.value),
+    salary: lastSalary,
+    playerName: lastPlayerName,
+    rankName: lastRankName,
+    ohtaniCount: ohtaniCount,
+    savedAt: new Date().toLocaleDateString('ja-JP')
+  };
+
+  try {
+    const params = new URLSearchParams();
+    Object.keys(data).forEach(k => params.append(k, data[k]));
+    const script = document.createElement('script');
+    script.src = GAS_URL + '?' + params.toString();
+    script.onload = script.onerror = () => {};
+    document.head.appendChild(script);
+    setTimeout(() => {}, 3000);
+
+    msgEl.className = 'save-msg ok';
+    msgEl.textContent = '✅ スプレッドシートに保存しました！';
+    numEl.value = '';
+  } catch(e) {
+    msgEl.className = 'save-msg ng';
+    msgEl.textContent = '送信に失敗しました。もう一度お試しください。';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '💾 保存する';
+}
+
+function resetForm() {
+  ['avg','ops','hr','rbi','sb','games'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('save-number').value = '';
+  document.getElementById('save-msg').textContent = '';
+  ['bd-batting','bd-power','bd-clutch','bd-speed','bd-total'].forEach(id => {
+    document.getElementById(id).style.width = '0%';
+  });
+  lastSalary = 0; lastPlayerName = ''; lastRankName = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
